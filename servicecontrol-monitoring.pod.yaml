@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: servicecontrol-monitoring-service
+  labels:
+    app: particular-servicecontrol-monitoring
+spec:
+  ports:
+  - port: 33633
+    name: servicecontrol-monitoring-pod
+  clusterIP: None
+  selector:
+    app: particular-servicecontrol-monitoring
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: servicecontrol-monitoring-pod
+  labels:
+    app: particular-servicecontrol-monitoring
+spec:
+  volumes:
+    - name: learning-transport-data
+      persistentVolumeClaim:
+        claimName: learning-transport-data
+  containers:  
+    - name: servicecontrol-monitoring
+      image: particular/servicecontrol-monitoring:latest
+      env:
+        - name: TRANSPORTTYPE
+          value: LearningTransport
+        - name: CONNECTIONSTRING
+          value: /transport
+      volumeMounts:
+        - mountPath: /transport
+          name: learning-transport-data
+  initContainers:
+    - name: ensure-transport-can-write
+      image: busybox:latest
+      command: ['chmod', 'a+w', '/transport']
+      volumeMounts:
+        - mountPath: /transport
+          name: learning-transport-data
+    - name: init-servicecontrol-monitoring
+      image: particular/servicecontrol-monitoring:latest
+      args: ['--setup']
+      env:
+        - name: TRANSPORTTYPE
+          value: LearningTransport
+        - name: CONNECTIONSTRING
+          value: /transport
+      volumeMounts:
+        - mountPath: /transport
+          name: learning-transport-data

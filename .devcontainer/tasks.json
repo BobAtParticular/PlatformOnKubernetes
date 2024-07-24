@@ -1,0 +1,19 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Open Browser",
+        "type": "shell",
+        "command": "./scripts/test.sh",
+        "windows": {
+          "command": ".\\scripts\\test.cmd"
+        },
+        "presentation": {
+          "reveal": "silent"
+        },
+        "runOptions": {
+            "runOn": "folderOpen"
+        }
+      }
+    ]
+  }
