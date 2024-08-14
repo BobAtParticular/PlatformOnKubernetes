@@ -12,12 +12,28 @@ spec:
   selector:
     app: particular-servicecontrol-error
 ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: error-db-files
+  labels:
+    type: local
+spec:
+  storageClassName: error-db-local
+  persistentVolumeReclaimPolicy: Retain
+  accessModes: [ "ReadWriteOnce"]
+  capacity:
+    storage: 500M
+  hostPath:
+    type: DirectoryOrCreate
+    path: "/tmp/error-db-files"
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: servicecontrol-error-statefulset
 spec:
-  serviceName: "servicecontrol-error-service"
+  serviceName: servicecontrol-error-service
   replicas: 1
   selector:
     matchLabels:
@@ -30,8 +46,8 @@ spec:
   - metadata:
       name: error-db-data
     spec:
+      storageClassName: error-db-local
       accessModes: [ "ReadWriteOnce"]
-      storageClassName: "error-db-files"
       resources:
         requests:
           storage: 500M
@@ -49,13 +65,19 @@ spec:
           image: particular/servicecontrol:latest
           env:
             - name: TRANSPORTTYPE
-              value: LearningTransport
+              valueFrom:
+                configMapKeyRef:
+                  name: transport-config 
+                  key: TRANSPORTTYPE
             - name: CONNECTIONSTRING
-              value: /transport
+              valueFrom:
+                configMapKeyRef:
+                  name: transport-config 
+                  key: CONNECTIONSTRING
             - name: RAVENDB_CONNECTIONSTRING
               value: http://localhost:8080
             - name: SERVICECONTROL_REMOTEINSTANCES
-              value: "[{'api_uri':'http://servicecontrol-audit-service:44444/api'}]"
+              value: '[{"api_uri":"http://servicecontrol-audit-service:44444/api"}]'
           volumeMounts:
             - mountPath: /transport
               name: learning-transport-data
@@ -68,7 +90,7 @@ spec:
             mountPath: /opt/RavenDB/Server/RavenData
         - name: wait-for-ravendb
           image: curlimages/curl:latest
-          command: ['-o', 'ping.json', 'http://localhost:8080/admin/debug/node/ping']
+          command: ['curl', '-o', 'ping.json', 'http://localhost:8080/admin/debug/node/ping']
         - name: ensure-transport-can-write
           image: busybox:latest
           command: ['chmod', 'a+w', '/transport']
@@ -80,9 +102,15 @@ spec:
           args: ['--setup']
           env:
             - name: TRANSPORTTYPE
-              value: LearningTransport
+              valueFrom:
+                configMapKeyRef:
+                  name: transport-config 
+                  key: TRANSPORTTYPE
             - name: CONNECTIONSTRING
-              value: /transport
+              valueFrom:
+                configMapKeyRef:
+                  name: transport-config 
+                  key: CONNECTIONSTRING
             - name: RAVENDB_CONNECTIONSTRING
               value: http://localhost:8080
           volumeMounts:

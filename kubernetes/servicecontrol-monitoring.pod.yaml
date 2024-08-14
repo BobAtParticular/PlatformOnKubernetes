@@ -23,14 +23,20 @@ spec:
     - name: learning-transport-data
       persistentVolumeClaim:
         claimName: learning-transport-data
-  containers:  
+  containers:
     - name: servicecontrol-monitoring
       image: particular/servicecontrol-monitoring:latest
       env:
         - name: TRANSPORTTYPE
-          value: LearningTransport
+          valueFrom:
+            configMapKeyRef:
+              name: transport-config 
+              key: TRANSPORTTYPE
         - name: CONNECTIONSTRING
-          value: /transport
+          valueFrom:
+            configMapKeyRef:
+              name: transport-config 
+              key: CONNECTIONSTRING
       volumeMounts:
         - mountPath: /transport
           name: learning-transport-data
@@ -46,9 +52,15 @@ spec:
       args: ['--setup']
       env:
         - name: TRANSPORTTYPE
-          value: LearningTransport
+          valueFrom:
+            configMapKeyRef:
+              name: transport-config 
+              key: TRANSPORTTYPE
         - name: CONNECTIONSTRING
-          value: /transport
+          valueFrom:
+            configMapKeyRef:
+              name: transport-config 
+              key: CONNECTIONSTRING
       volumeMounts:
         - mountPath: /transport
           name: learning-transport-data

@@ -65,9 +65,15 @@ spec:
           image: particular/servicecontrol-audit:latest
           env:
             - name: TRANSPORTTYPE
-              value: "LearningTransport"
+              valueFrom:
+                configMapKeyRef:
+                  name: transport-config 
+                  key: TRANSPORTTYPE
             - name: CONNECTIONSTRING
-              value: "/transport"
+              valueFrom:
+                configMapKeyRef:
+                  name: transport-config 
+                  key: CONNECTIONSTRING
             - name: RAVENDB_CONNECTIONSTRING
               value: "http://localhost:8080"
           volumeMounts:
@@ -82,7 +88,7 @@ spec:
             mountPath: /opt/RavenDB/Server/RavenData
         - name: wait-for-ravendb
           image: curlimages/curl:latest
-          command: ['-o', 'ping.json', 'http://localhost:8080/admin/debug/node/ping']
+          command: ['curl', '-v', '-o', 'ping.json', 'http:///servicecontrol-audit-statefulset-0:8080/admin/debug/node/ping']
         - name: ensure-transport-can-write
           image: busybox:latest
           command: ['chmod', 'a+w', '/transport']
@@ -94,9 +100,15 @@ spec:
           args: ['--setup']
           env:
             - name: TRANSPORTTYPE
-              value: "LearningTransport"
+              valueFrom:
+                configMapKeyRef:
+                  name: transport-config 
+                  key: TRANSPORTTYPE
             - name: CONNECTIONSTRING
-              value: "/transport"
+              valueFrom:
+                configMapKeyRef:
+                  name: transport-config 
+                  key: CONNECTIONSTRING
             - name: RAVENDB_CONNECTIONSTRING
               value: "http://localhost:8080"
           volumeMounts:

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sender-deployment
+  labels:
+    app: sender
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sender
+  template:
+    metadata:
+      labels:
+        app: sender
+    spec:
+      volumes:
+        - name: learning-transport-data
+          persistentVolumeClaim:
+            claimName: learning-transport-data
+      containers:
+      - name: sender
+        image: sender
+        imagePullPolicy: Never
+        env:
+          - name: TRANSPORTTYPE
+            valueFrom:
+              configMapKeyRef:
+                name: transport-config 
+                key: TRANSPORTTYPE
+          - name: CONNECTIONSTRING
+            valueFrom:
+              configMapKeyRef:
+                name: transport-config 
+                key: CONNECTIONSTRING
+        volumeMounts:
+          - mountPath: /transport
+            name: learning-transport-data

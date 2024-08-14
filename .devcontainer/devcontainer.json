@@ -1,36 +1,40 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // Based on https://github.com/devcontainers/templates/tree/main/src/kubernetes-helm-minikube
 {
-	"name": "Particular Platform on K8s sample",
-	"build": {
-        "dockerfile": "Dockerfile"
-    },
-
+	"name": "Particular Platform on Containrs sample",
+	"build": { 
+		"dockerfile": "Dockerfile"
+	},
+	"containerEnv": {
+		"CONTAINER_WORKSPACE_FOLDER": "${containerWorkspaceFolder}" 
+	},
 	"features": {
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {
 			"enableNonRootDocker": "true",
 			"moby": "true"
 		},
+		"ghcr.io/devcontainers/features/dotnet:2": {
+			"version": "latest"
+		},
 		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
 			"version": "latest",
-			"helm": "latest",
 			"minikube": "latest"
-		},
-        "./rabbitmq-operator": {}
+		}
 	},
-	
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "kubectl version"
-
-	// Use 'postStartCommand' to run commands after the container is created like starting minikube.
-	// "postStartCommand": "nohup bash -c 'minikube start &' > minikube.log 2>&1",
-
-	// Configure tool-specific properties.
-	// "customizations": {},
-
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+	"forwardPorts": [80],
+    "postStartCommand": "poststart.sh",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-azuretools.vscode-docker",
+				"redhat.vscode-yaml",
+				"ms-kubernetes-tools.vscode-kubernetes-tools",
+				"ms-dotnettools.csdevkit",
+				"ms-dotnettools.csharp"
+			]
+		}
+	},
+	"hostRequirements": {
+		"memory": "7gb"
+	}
 }
